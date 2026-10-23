@@ -1,0 +1,181 @@
+
+#include <stdio.h>
+
+#define MAX 100
+#define INF 999999
+
+int parent[MAX];
+
+int find(int i)
+{
+    while (parent[i] != i)
+        i = parent[i];
+    return i;
+}
+
+void unionSet(int i, int j)
+{
+    int a = find(i);
+    int b = find(j);
+    parent[a] = b;
+}
+
+void prim(int graph[MAX][MAX], int n)
+{
+    int selected[MAX] = {0};
+    int edges = 0, total = 0;
+
+    selected[0] = 1;
+
+    printf("\nPrim's MST:\n");
+    printf("Edge\tWeight\n");
+
+    while (edges < n - 1)
+    {
+        int min = INF, u = -1, v = -1;
+
+        for (int i = 0; i < n; i++)
+        {
+            if (selected[i])
+            {
+                for (int j = 0; j < n; j++)
+                {
+                    if (!selected[j] && graph[i][j] != 0 &&
+                        graph[i][j] < min)
+                    {
+                        min = graph[i][j];
+                        u = i;
+                        v = j;
+                    }
+                }
+            }
+        }
+
+        if (u == -1)
+        {
+            printf("MST not possible: graph is disconnected.\n");
+            return;
+        }
+
+        printf("%d - %d\t%d\n", u, v, min);
+        selected[v] = 1;
+        total += min;
+        edges++;
+    }
+
+    printf("Total MST weight = %d\n", total);
+}
+
+void kruskal(int graph[MAX][MAX], int n)
+{
+    int edgeU[MAX * MAX], edgeV[MAX * MAX], edgeW[MAX * MAX];
+    int count = 0, edges = 0, total = 0;
+
+    for (int i = 0; i < n; i++)
+        parent[i] = i;
+
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = i + 1; j < n; j++)
+        {
+            if (graph[i][j] != 0)
+            {
+                edgeU[count] = i;
+                edgeV[count] = j;
+                edgeW[count] = graph[i][j];
+                count++;
+            }
+        }
+    }
+
+    // Sort edges by increasing weight
+    for (int i = 0; i < count - 1; i++)
+    {
+        for (int j = 0; j < count - i - 1; j++)
+        {
+            if (edgeW[j] > edgeW[j + 1])
+            {
+                int temp = edgeW[j];
+                edgeW[j] = edgeW[j + 1];
+                edgeW[j + 1] = temp;
+
+                temp = edgeU[j];
+                edgeU[j] = edgeU[j + 1];
+                edgeU[j + 1] = temp;
+
+                temp = edgeV[j];
+                edgeV[j] = edgeV[j + 1];
+                edgeV[j + 1] = temp;
+            }
+        }
+    }
+
+    printf("\nKruskal's MST:\n");
+    printf("Edge\tWeight\n");
+
+    for (int i = 0; i < count && edges < n - 1; i++)
+    {
+        int u = edgeU[i];
+        int v = edgeV[i];
+
+        if (find(u) != find(v))
+        {
+            unionSet(u, v);
+            printf("%d - %d\t%d\n", u, v, edgeW[i]);
+            total += edgeW[i];
+            edges++;
+        }
+    }
+
+    if (edges != n - 1)
+        printf("MST not possible: graph is disconnected.\n");
+    else
+        printf("Total MST weight = %d\n", total);
+}
+
+int main()
+{
+    int graph[MAX][MAX];
+    int n, choice;
+
+    printf("Enter number of vertices (max %d): ", MAX);
+    scanf("%d", &n);
+
+    if (n < 1 || n > MAX)
+    {
+        printf("Invalid number of vertices.\n");
+        return 1;
+    }
+
+    printf("Enter adjacency matrix (0 means no edge):\n");
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < n; j++)
+            scanf("%d", &graph[i][j]);
+
+    do
+    {
+        printf("\n1. Prim's Algorithm");
+        printf("\n2. Kruskal's Algorithm");
+        printf("\n3. Exit");
+        printf("\nEnter choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+            case 1:
+                prim(graph, n);
+                break;
+            case 2:
+                kruskal(graph, n);
+                break;
+            case 3:
+                printf("Exiting...\n");
+                break;
+            default:
+                printf("Invalid choice!\n");
+        }
+    } while (choice != 3);
+
+    return 0;
+}
